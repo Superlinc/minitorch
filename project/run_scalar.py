@@ -1,6 +1,6 @@
 """
 Be sure you have minitorch installed in you Virtual Env.
->>> pip install -Ue .
+# >>> pip install -Ue .
 """
 import random
 
@@ -45,10 +45,12 @@ class Linear(minitorch.Module):
 
     def forward(self, inputs):
         # ASSIGN1.5
-        y = [b.value for b in self.bias]
-        for i, x in enumerate(inputs):
-            for j in range(len(y)):
-                y[j] = y[j] + x * self.weights[i][j].value
+        x = inputs
+        out_size = len(self.bias)
+        y = [minitorch.Scalar(0)] * out_size
+        for i in range(out_size):
+            for weight in self.weights:
+                y[i] = y[i] + weight[i].value * x[i] + self.bias[i].value
         return y
         # END ASSIGN1.5
 
