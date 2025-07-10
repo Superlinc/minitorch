@@ -43,8 +43,10 @@ def index_to_position(index: Index, strides: Strides) -> int:
         Position in storage
     """
 
-    # TODO: Implement for Task 2.1.
-    raise NotImplementedError('Need to implement for Task 2.1')
+    result = 0
+    for i, index in enumerate(index):
+        result += index * strides[i]
+    return result
 
 
 def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
@@ -60,8 +62,9 @@ def to_index(ordinal: int, shape: Shape, out_index: OutIndex) -> None:
         out_index : return index corresponding to position.
 
     """
-    # TODO: Implement for Task 2.1.
-    raise NotImplementedError('Need to implement for Task 2.1')
+    for d in range(len(shape) - 1, -1, -1):
+        out_index[d] = ordinal % shape[d]
+        ordinal = ordinal // shape[d]
 
 
 def broadcast_index(
@@ -174,7 +177,7 @@ class TensorData:
         if isinstance(index, int):
             aindex: Index = array([index])
         if isinstance(index, tuple):
-            aindex = array(index)
+            aindex: Index = array(index)
 
         # Pretend 0-dim shape is 1-dim shape of singleton
         shape = self.shape
@@ -182,11 +185,11 @@ class TensorData:
             shape = (1,)
 
         # Check for errors
-        if aindex.shape[0] != len(self.shape):
-            raise IndexingError(f"Index {aindex} must be size of {self.shape}.")
+        if aindex.shape[0] != len(shape):
+            raise IndexingError(f"Index {aindex} must be size of {shape}.")
         for i, ind in enumerate(aindex):
-            if ind >= self.shape[i]:
-                raise IndexingError(f"Index {aindex} out of range {self.shape}.")
+            if ind >= shape[i]:
+                raise IndexingError(f"Index {aindex} out of range {shape}.")
             if ind < 0:
                 raise IndexingError(f"Negative indexing for {aindex} not supported.")
 
@@ -211,7 +214,7 @@ class TensorData:
         self._storage[self.index(key)] = val
 
     def tuple(self) -> Tuple[Storage, Shape, Strides]:
-        return (self._storage, self._shape, self._strides)
+        return self._storage, self._shape, self._strides
 
     def permute(self, *order: int) -> TensorData:
         """
@@ -227,8 +230,11 @@ class TensorData:
             range(len(self.shape))
         ), f"Must give a position to each dimension. Shape: {self.shape} Order: {order}"
 
-        # TODO: Implement for Task 2.1.
-        raise NotImplementedError('Need to implement for Task 2.1')
+        return TensorData(
+            self._storage,
+            tuple([self.shape[i] for i in order]),
+            tuple([self._strides[i] for i in order]),
+        )
 
     def to_string(self) -> str:
         s = ""

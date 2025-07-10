@@ -14,7 +14,7 @@ from .tensor_strategies import indices, tensor_data
 
 @pytest.mark.task2_1
 def test_layout() -> None:
-    "Test basis properties of layout and strides"
+    """Test basis properties of layout and strides"""
     data = [0] * 3 * 5
     tensor_data = minitorch.TensorData(data, (3, 5), (5, 1))
 
@@ -42,7 +42,7 @@ def test_layout_bad() -> None:
 @pytest.mark.task2_1
 @given(tensor_data())
 def test_enumeration(tensor_data: TensorData) -> None:
-    "Test enumeration of tensor_datas."
+    """Test enumeration of tensor_datas."""
     indices = list(tensor_data.indices())
 
     # Check that enough positions are enumerated.
@@ -54,7 +54,7 @@ def test_enumeration(tensor_data: TensorData) -> None:
     # Check that all indices are within the shape.
     for ind in tensor_data.indices():
         for i, p in enumerate(ind):
-            assert p >= 0 and p < tensor_data.shape[i]
+            assert 0 <= p < tensor_data.shape[i]
 
 
 @pytest.mark.task2_1
@@ -64,7 +64,7 @@ def test_index(tensor_data: TensorData) -> None:
     # Check that all indices are within the size.
     for ind in tensor_data.indices():
         pos = tensor_data.index(ind)
-        assert pos >= 0 and pos < tensor_data.size
+        assert 0 <= pos < tensor_data.size
 
     base = [0] * tensor_data.dims
     with pytest.raises(minitorch.IndexingError):
