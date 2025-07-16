@@ -28,14 +28,8 @@ def test_one_args(
 ) -> None:
     "Test one-arg functions compared to floats"
     name, base_fn, tensor_fn = fn
-    print(name)
     t2 = tensor_fn(t1)
-    print(t1)
-    print(t2)
     for ind in t2._tensor.indices():
-        print(ind)
-        print(t1[ind])
-        print(t2[ind])
         assert_close(t2[ind], base_fn(t1[ind]))
 
 
@@ -61,6 +55,7 @@ def test_one_derivative(
 ) -> None:
     "Test the gradient of a one-arg tensor function"
     name, _, tensor_fn = fn
+    print(name)
     grad_check(tensor_fn, t1)
 
 

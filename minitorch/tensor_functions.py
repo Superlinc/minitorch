@@ -118,7 +118,7 @@ class Sigmoid(Function):
     def backward(ctx: Context, grad_output: Tensor) -> Tensor:
         (t1,) = ctx.saved_values
         g =  grad_output.f.sigmoid_map(t1)
-        return grad_output.f.mul_reduce(grad_output, g, grad_output.f.add_zip(1, grad_output.f.neg_map(g)))
+        return grad_output.f.mul_zip(grad_output, grad_output.f.mul_zip(g, grad_output.f.add_zip(tensor([1.0]), grad_output.f.neg_map(g))))
 
 
 class ReLU(Function):
@@ -185,7 +185,7 @@ class LT(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
-        return Tensor.make([0.0], (1, ), backend=grad_output.backend), Tensor.make([0.0], (1, ), backend=grad_output.backend)
+        return tensor([0.0]), tensor([0.0])
 
 
 class EQ(Function):
@@ -195,7 +195,7 @@ class EQ(Function):
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, Tensor]:
-        return Tensor.make([0.0], (1, ), backend=grad_output.backend), Tensor.make([0.0], (1, ), backend=grad_output.backend)
+        return tensor([0.0]), tensor([0.0])
 
 
 class IsClose(Function):
@@ -207,13 +207,17 @@ class IsClose(Function):
 class Permute(Function):
     @staticmethod
     def forward(ctx: Context, a: Tensor, order: Tensor) -> Tensor:
-        ctx.save_for_backward(order)
-        return Tensor(a._tensor.permute(*order), backend=a.backend)
+        unpacked = [int(n) for n in order._tensor._storage]
+        ctx.save_for_backward(unpacked)
+        return a._new(a._tensor.permute(*unpacked))
 
     @staticmethod
     def backward(ctx: Context, grad_output: Tensor) -> Tuple[Tensor, float]:
-        # TODO: Implement for Task 2.4.
-        raise NotImplementedError('Need to implement for Task 2.4')
+        (unpacked,) = ctx.saved_tensors
+        reverse_order_map = {pos: i for i, pos in enumerate(unpacked)}
+        prev_order = [reverse_order_map[i] for i in range(len(reverse_order_map))]
+
+        return grad_output._new(grad_output._tensor.permute(*prev_order)), 0
 
 
 class View(Function):
