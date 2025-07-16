@@ -135,7 +135,7 @@ class Tensor:
         return self._tensor.dims
 
     def _ensure_tensor(self, b: TensorLike) -> Tensor:
-        "Turns a python number into a tensor with the same backend."
+        """Turns a python number into a tensor with the same backend."""
         if isinstance(b, (int, float)):
             c = Tensor.make([b], (1,), backend=self.backend)
         else:
@@ -160,7 +160,7 @@ class Tensor:
         return Mul.apply(self._ensure_tensor(b), Inv.apply(self))
 
     def __matmul__(self, b: Tensor) -> Tensor:
-        "Not used until Module 3"
+        """Not used until Module 3"""
         return MatMul.apply(self, b)
 
     def __lt__(self, b: TensorLike) -> Tensor:
@@ -208,29 +208,29 @@ class Tensor:
         return x
 
     def sum(self, dim: Optional[int] = None) -> Tensor:
-        "Compute the sum over dimension `dim`"
+        """Compute the sum over dimension `dim`"""
         if dim is None:
             return Sum.apply(self.contiguous().view(self.size), self._ensure_tensor(0))
         else:
             return Sum.apply(self, self._ensure_tensor(dim))
 
     def mean(self, dim: Optional[int] = None) -> Tensor:
-        "Compute the mean over dimension `dim`"
+        """Compute the mean over dimension `dim`"""
         if dim is not None:
             return self.sum(dim) / self.shape[dim]
         else:
             return self.sum() / self.size
 
     def permute(self, *order: int) -> Tensor:
-        "Permute tensor dimensions to *order"
+        """Permute tensor dimensions to *order"""
         return Permute.apply(self, tensor(list(order)))
 
     def view(self, *shape: int) -> Tensor:
-        "Change the shape of the tensor to a new shape with the same size"
+        """Change the shape of the tensor to a new shape with the same size"""
         return View.apply(self, tensor(list(shape)))
 
     def contiguous(self) -> Tensor:
-        "Return a contiguous tensor with the same data"
+        """Return a contiguous tensor with the same data"""
         return Copy.apply(self)
 
     def __repr__(self) -> str:
@@ -260,7 +260,7 @@ class Tensor:
         strides: Optional[UserStrides] = None,
         backend: Optional[TensorBackend] = None,
     ) -> Tensor:
-        "Create a new tensor from data"
+        """Create a new tensor from data"""
         return Tensor(TensorData(storage, shape, strides), backend=backend)
 
     def expand(self, other: Tensor) -> Tensor:
@@ -323,7 +323,7 @@ class Tensor:
 
     def accumulate_derivative(self, x: Any) -> None:
         """
-        Add `val` to the the derivative accumulated on this variable.
+        Add `val` to the derivative accumulated on this variable.
         Should only be called during autodifferentiation on leaf variables.
 
         Args:
@@ -337,7 +337,7 @@ class Tensor:
         self.grad += x
 
     def is_leaf(self) -> bool:
-        "True if this variable created by the user (no `last_fn`)"
+        """True if this variable created by the user (no `last_fn`)"""
         return self.history is not None and self.history.last_fn is None
 
     def is_constant(self) -> bool:
