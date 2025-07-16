@@ -80,8 +80,31 @@ def _tensor_conv1d(
     s1 = input_strides
     s2 = weight_strides
 
-    # TODO: Implement for Task 4.1.
-    raise NotImplementedError('Need to implement for Task 4.1')
+    for i in  prange(out_size):
+        out_index = np.empty_like(out_shape)
+        to_index(i, out_shape, out_index)
+        data = 0
+
+        for in_channel in prange(in_channels):
+            for k in range(kw):
+                if reverse:
+                    k = kw - k -1
+
+                w = weight[out_index[1] * s2[0] + in_channel * s2[1] + k * s2[2]]
+                in_val = 0
+                common_in_idx_prefix = out_index[0] * s1[0] + in_channel * s1[1]
+                if reverse:
+                    reverse_offset = out_index[2] - k
+                    if reverse_offset >= 0:
+                        in_val = input[common_in_idx_prefix + reverse_offset * s1[2]]
+                else:
+                    forward_offset = k + out_index[2]
+                    if forward_offset < width:
+                        in_val = input[common_in_idx_prefix + forward_offset * s1[2]]
+                data += w * in_val
+
+        out[index_to_position(out_index, out_strides)] = data
+
 
 
 tensor_conv1d = njit(parallel=True)(_tensor_conv1d)
@@ -206,8 +229,39 @@ def _tensor_conv2d(
     s10, s11, s12, s13 = s1[0], s1[1], s1[2], s1[3]
     s20, s21, s22, s23 = s2[0], s2[1], s2[2], s2[3]
 
-    # TODO: Implement for Task 4.2.
-    raise NotImplementedError('Need to implement for Task 4.2')
+    for i in prange(out_size):
+        out_index = np.empty_like(out_shape)
+        to_index(i, out_shape, out_index)
+
+        data = 0
+        for in_channel in prange(in_channels):
+            for h in range(kh):
+                for w in range(kw):
+                    if reverse:
+                        h = kh - h - 1
+                        w = kw - w - 1
+
+                    curr_weight = weight[out_index[1] * s20 + in_channel * s21 + h * s22 + w * s23]
+
+                    in_val = 0
+                    common_pos_offset = out_index[0] * s10 + in_channel * s11
+                    if reverse:
+                        reverse_h = out_index[2] - h
+                        reverse_w = out_index[3] - w
+                        if reverse_h >= 0 and reverse_w >= 0:
+                            in_val = input[
+                                int(common_pos_offset + reverse_h * s12 + reverse_w * s13)
+                            ]
+                    else:
+                        forward_h = out_index[2] + h
+                        forward_w = out_index[3] + w
+                        if forward_h < height and forward_w < width:
+                            in_val = input[
+                                int(common_pos_offset + forward_h * s12 + forward_w * s13)
+                            ]
+                    data += curr_weight * in_val
+
+        out[index_to_position(out_index, out_strides)] = data
 
 
 tensor_conv2d = njit(parallel=True, fastmath=True)(_tensor_conv2d)
